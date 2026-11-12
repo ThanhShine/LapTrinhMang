@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="booking_app_name">Quản lý Đặt phòng</string>
+    <string name="booking_tab_rooms">Phòng học</string>
+    <string name="booking_tab_schedule">Lịch phòng</string>
+    <string name="booking_tab_my_bookings">Đơn của tôi</string>
+    <string name="booking_tab_favorites">Yêu thích</string>
+    <string name="booking_tab_management">Danh mục</string>
+    <string name="booking_search_hint">Tìm kiếm theo tên phòng, mã phòng...</string>
+    <string name="booking_btn_book_now">Đặt phòng</string>
+    <string name="booking_btn_cancel">Hủy</string>
+    <string name="booking_btn_confirm">Xác nhận</string>
+    <string name="booking_btn_share">Chia sẻ</string>
+    <string name="booking_status_pending">Chờ duyệt</string>
+    <string name="booking_status_approved">Đã duyệt</string>
+    <string name="booking_status_rejected">Từ chối</string>
+    <string name="booking_status_cancelled">Đã hủy</string>
+    <string name="booking_status_completed">Hoàn thành</string>
+</resources>
+
