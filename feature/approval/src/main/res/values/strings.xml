@@ -1,0 +1,25 @@
+<resources>
+    <string name="approval_module_title">Phê duyệt &amp; Quản lý lịch</string>
+    <string name="approval_tab_pending">Chờ duyệt</string>
+    <string name="approval_tab_schedule">Lịch toàn trường</string>
+    <string name="approval_tab_rules">Quy trình &amp; Tự động</string>
+    <string name="approval_tab_categories">Danh mục phòng</string>
+
+    <string name="approval_btn_approve">Phê duyệt</string>
+    <string name="approval_btn_reject">Từ chối</string>
+    <string name="approval_btn_batch_approve">Duyệt hàng loạt</string>
+    <string name="approval_btn_adjust">Điều chỉnh lịch</string>
+    <string name="approval_btn_lock_room">Tạm khóa phòng</string>
+    <string name="approval_btn_remind">Nhắc duyệt</string>
+
+    <string name="approval_reason_label">Lý do từ chối (bắt buộc)</string>
+    <string name="approval_reason_placeholder">Nhập lý do cụ thể vì sao từ chối đơn…</string>
+    <string name="approval_reason_error">Vui lòng cung cấp lý do từ chối đơn!</string>
+
+    <string name="approval_lock_warning_title">Cảnh báo đơn đặt bị ảnh hưởng</string>
+    <string name="approval_lock_warning_msg">Khóa khung giờ phòng này sẽ ảnh hưởng đến các đơn đặt phòng sau. Hệ thống KHÔNG tự xóa lịch đã duyệt, bạn cần chủ động thông báo hoặc đổi phòng.</string>
+
+    <string name="approval_empty_pending">Không có yêu cầu đặt phòng nào đang chờ duyệt</string>
+    <string name="approval_empty_schedule">Không có lịch đặt nào trong ngày này</string>
+    <string name="approval_search_hint">Tìm theo người đặt, mã đơn, phòng…</string>
+</resources>

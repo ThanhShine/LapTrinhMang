@@ -1,0 +1,9 @@
+<resources>
+    <color name="approval_status_pending">#F59E0B</color>
+    <color name="approval_status_approved">#10B981</color>
+    <color name="approval_status_rejected">#EF4444</color>
+    <color name="approval_status_locked">#6B7280</color>
+    <color name="approval_priority_urgent">#DC2626</color>
+    <color name="approval_priority_high">#EA580C</color>
+    <color name="approval_priority_normal">#3B82F6</color>
+</resources>
