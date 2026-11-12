@@ -1,0 +1,20 @@
+<resources>
+    <string name="checkin_module_title">Check-in, Sự cố &amp; Thống kê</string>
+    <string name="checkin_tab_qr">Quét QR Check-in</string>
+    <string name="checkin_tab_issues">Báo cáo &amp; Sự cố</string>
+    <string name="checkin_tab_equipment">Thiết bị phòng</string>
+    <string name="checkin_tab_statistics">Thống kê &amp; Báo cáo</string>
+
+    <string name="checkin_btn_scan">Bắt đầu quét QR</string>
+    <string name="checkin_btn_checkout">Xác nhận trả phòng</string>
+    <string name="checkin_btn_report_issue">Báo sự cố mới</string>
+    <string name="checkin_btn_rating">Đánh giá phòng</string>
+    <string name="checkin_btn_assign">Phân công xử lý</string>
+    <string name="checkin_btn_resolve">Nghiệm thu sự cố</string>
+    <string name="checkin_btn_export_report">Xuất file báo cáo</string>
+
+    <string name="checkin_scan_hint">Hướng camera về phía mã QR dán tại cửa phòng học DAU</string>
+    <string name="checkin_manual_input_title">Hoặc nhập mã phòng thủ công</string>
+    <string name="checkin_success_msg">Check-in thành công!</string>
+    <string name="checkin_checkout_success_msg">Trả phòng thành công. Cảm ơn bạn!</string>
+</resources>
