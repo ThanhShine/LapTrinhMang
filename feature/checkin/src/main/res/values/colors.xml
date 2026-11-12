@@ -1,0 +1,9 @@
+<resources>
+    <color name="checkin_severity_low">#10B981</color>
+    <color name="checkin_severity_medium">#F59E0B</color>
+    <color name="checkin_severity_high">#EA580C</color>
+    <color name="checkin_severity_critical">#DC2626</color>
+    <color name="checkin_status_open">#EF4444</color>
+    <color name="checkin_status_assigned">#3B82F6</color>
+    <color name="checkin_status_resolved">#10B981</color>
+</resources>
