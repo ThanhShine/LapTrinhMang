@@ -24,7 +24,10 @@ interface AdminApi {
     ): Response<ApiResponse<PaginatedData<User>>>
 
     @POST("admin/users")
-    suspend fun createUser(@Body request: CreateUserRequest): Response<ApiResponse<Unit>>
+    suspend fun createUser(@Body request: CreateUserRequest): Response<ApiResponse<CreateUserResponseData>>
+
+    @POST("admin/users/import-csv")
+    suspend fun importUsersCsv(@Body request: ImportCsvRequest): Response<ApiResponse<ImportCsvResult>>
 
     @PUT("admin/users/{id}")
     suspend fun updateUser(@Path("id") id: Long, @Body request: UpdateUserRequest): Response<ApiResponse<Unit>>
@@ -33,7 +36,7 @@ interface AdminApi {
     suspend fun updateUserStatus(@Path("id") id: Long, @Body request: UserStatusRequest): Response<ApiResponse<Unit>>
 
     @POST("admin/users/{id}/reset-password")
-    suspend fun resetUserPassword(@Path("id") id: Long, @Body request: ResetUserPasswordRequest): Response<ApiResponse<Unit>>
+    suspend fun resetUserPassword(@Path("id") id: Long, @Body request: ResetUserPasswordRequest): Response<ApiResponse<ResetUserPasswordResponseData>>
 
     @GET("admin/roles")
     suspend fun getRoles(): Response<ApiResponse<List<RolePermissionItem>>>

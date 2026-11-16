@@ -1,7 +1,6 @@
 package com.example.laptrinhmang
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,29 +17,22 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.example.laptrinhmang.core.network.SessionEvent
 import com.example.laptrinhmang.core.network.SessionManager
 import com.example.laptrinhmang.core.ui.navigation.DauBottomNavigationBar
 import com.example.laptrinhmang.core.ui.navigation.NotificationNavigator
 import com.example.laptrinhmang.core.ui.theme.DauTheme
-import com.example.laptrinhmang.feature.account.ui.forgotpassword.ForgotPasswordScreen
-import com.example.laptrinhmang.feature.account.ui.forgotpassword.ForgotPasswordViewModel
+import com.example.laptrinhmang.feature.account.ui.changepassword.ForceChangePasswordScreen
 import com.example.laptrinhmang.feature.account.ui.login.LoginScreen
 import com.example.laptrinhmang.feature.account.ui.login.LoginViewModel
 import com.example.laptrinhmang.feature.account.ui.notifications.NotificationScreen
 import com.example.laptrinhmang.feature.account.ui.notifications.NotificationViewModel
-import com.example.laptrinhmang.feature.account.ui.otp.OtpScreen
-import com.example.laptrinhmang.feature.account.ui.otp.OtpViewModel
 import com.example.laptrinhmang.feature.account.ui.profile.ProfileScreen
 import com.example.laptrinhmang.feature.account.ui.profile.ProfileViewModel
-import com.example.laptrinhmang.feature.account.ui.register.RegisterScreen
-import com.example.laptrinhmang.feature.account.ui.register.RegisterViewModel
 import com.example.laptrinhmang.feature.admin.ui.AdminHomeScreen
 import com.example.laptrinhmang.feature.admin.ui.audit.AdminAuditLogViewModel
 import com.example.laptrinhmang.feature.admin.ui.departments.AdminDepartmentsViewModel
@@ -115,7 +107,8 @@ fun DauRmsApp(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            if (isMainScreenRoute) {
+            // Hide bottom nav if user must change password
+            if (isMainScreenRoute && currentUser?.mustChangePassword != true) {
                 DauBottomNavigationBar(
                     user = currentUser,
                     currentRoute = currentRoute,
@@ -137,92 +130,65 @@ fun DauRmsApp(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Auth routes
+            // Auth route
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
                 val uiState by loginViewModel.uiState.collectAsState()
 
                 LoginScreen(
                     uiState = uiState,
-                    onIdentifierChanged = loginViewModel::onIdentifierChanged,
+                    onEmailChanged = loginViewModel::onEmailChanged,
                     onPasswordChanged = loginViewModel::onPasswordChanged,
                     onLoginClick = loginViewModel::login,
                     onQuickFillRole = loginViewModel::fillMockRoleCredentials,
-                    onNavigateToRegister = { navController.navigate("register") },
-                    onNavigateToForgotPassword = { navController.navigate("forgot_password") },
+                    onOpenContactAdmin = loginViewModel::openContactAdminDialog,
+                    onCloseContactAdmin = loginViewModel::closeContactAdminDialog,
                     onLoginSuccess = { user ->
-                        val startRoute = when (user.role) {
+                        if (user.mustChangePassword) {
+                            navController.navigate("force_change_password") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        } else {
+                            val startRoute = when (user.role) {
+                                com.example.laptrinhmang.core.model.Role.ADMIN -> "admin"
+                                com.example.laptrinhmang.core.model.Role.ROOM_MANAGER -> "checkin"
+                                else -> "booking"
+                            }
+                            navController.navigate(startRoute) {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        }
+                    }
+                )
+            }
+
+            composable("force_change_password") {
+                ForceChangePasswordScreen(
+                    onPasswordChangedSuccess = {
+                        profileViewModel.loadProfile()
+                        val startRoute = when (currentUser?.role) {
                             com.example.laptrinhmang.core.model.Role.ADMIN -> "admin"
                             com.example.laptrinhmang.core.model.Role.ROOM_MANAGER -> "checkin"
                             else -> "booking"
                         }
                         navController.navigate(startRoute) {
-                            popUpTo("login") { inclusive = true }
+                            popUpTo("force_change_password") { inclusive = true }
                         }
-                    }
-                )
-            }
-
-            composable("register") {
-                val registerViewModel: RegisterViewModel = hiltViewModel()
-                val uiState by registerViewModel.uiState.collectAsState()
-
-                RegisterScreen(
-                    uiState = uiState,
-                    onUserCodeChanged = registerViewModel::onUserCodeChanged,
-                    onFullNameChanged = registerViewModel::onFullNameChanged,
-                    onEmailChanged = registerViewModel::onEmailChanged,
-                    onPasswordChanged = registerViewModel::onPasswordChanged,
-                    onConfirmPasswordChanged = registerViewModel::onConfirmPasswordChanged,
-                    onRegisterClick = registerViewModel::register,
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToOtp = { email ->
-                        navController.navigate("otp/$email")
-                    }
-                )
-            }
-
-            composable(
-                route = "otp/{email}",
-                arguments = listOf(navArgument("email") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val email = backStackEntry.arguments?.getString("email") ?: ""
-                val otpViewModel: OtpViewModel = hiltViewModel()
-                LaunchedEffect(email) {
-                    otpViewModel.init(email)
-                }
-                val uiState by otpViewModel.uiState.collectAsState()
-
-                OtpScreen(
-                    uiState = uiState,
-                    onOtpCodeChanged = otpViewModel::onOtpCodeChanged,
-                    onVerifyClick = otpViewModel::verifyOtp,
-                    onResendClick = otpViewModel::resendOtp,
-                    onNavigateBack = { navController.popBackStack() },
-                    onVerifySuccess = {
-                        navController.navigate("login") {
-                            popUpTo("login") { inclusive = true }
-                        }
-                    }
-                )
-            }
-
-            composable("forgot_password") {
-                val forgotPasswordViewModel: ForgotPasswordViewModel = hiltViewModel()
-                val uiState by forgotPasswordViewModel.uiState.collectAsState()
-
-                ForgotPasswordScreen(
-                    uiState = uiState,
-                    onEmailChanged = forgotPasswordViewModel::onEmailChanged,
-                    onOtpCodeChanged = forgotPasswordViewModel::onOtpCodeChanged,
-                    onNewPasswordChanged = forgotPasswordViewModel::onNewPasswordChanged,
-                    onConfirmPasswordChanged = forgotPasswordViewModel::onConfirmPasswordChanged,
-                    onRequestOtpClick = forgotPasswordViewModel::requestOtp,
-                    onResetPasswordClick = forgotPasswordViewModel::resetPassword,
-                    onNavigateBack = { navController.popBackStack() },
-                    onResetSuccess = {
-                        navController.navigate("login") {
-                            popUpTo("login") { inclusive = true }
+                    },
+                    onSubmitChangePassword = { oldPass, newPass, onDone ->
+                        scope.launch {
+                            val res = profileViewModel.uiState.value
+                            profileViewModel.onOldPasswordChanged(oldPass)
+                            profileViewModel.onNewPasswordChanged(newPass)
+                            profileViewModel.onConfirmNewPasswordChanged(newPass)
+                            profileViewModel.submitChangePassword()
+                            // Check result
+                            kotlinx.coroutines.delay(500)
+                            if (profileViewModel.uiState.value.errorMessage == null) {
+                                onDone(true, null)
+                            } else {
+                                onDone(false, profileViewModel.uiState.value.errorMessage)
+                            }
                         }
                     }
                 )
@@ -260,9 +226,11 @@ fun DauRmsApp(
                     onOpenAddUserDialog = adminUsersViewModel::openAddDialog,
                     onCloseAddUserDialog = adminUsersViewModel::closeAddDialog,
                     onCreateUser = adminUsersViewModel::createUser,
+                    onOpenImportCsvDialog = adminUsersViewModel::openImportCsvDialog,
+                    onCloseImportCsvDialog = adminUsersViewModel::closeImportCsvDialog,
+                    onImportCsv = adminUsersViewModel::importCsv,
+                    onDismissTempPassword = adminUsersViewModel::dismissTempPasswordDialog,
                     onToggleLockUser = adminUsersViewModel::toggleLockUser,
-                    onOpenResetPasswordDialog = adminUsersViewModel::openResetPasswordDialog,
-                    onCloseResetPasswordDialog = adminUsersViewModel::closeResetPasswordDialog,
                     onResetPassword = adminUsersViewModel::resetPassword,
 
                     rolesUiState = rolesUiState,

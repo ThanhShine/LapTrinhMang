@@ -32,11 +32,13 @@ fun AdminHomeScreen(
     onSearchUsersChanged: (String) -> Unit,
     onOpenAddUserDialog: () -> Unit,
     onCloseAddUserDialog: () -> Unit,
-    onCreateUser: (username: String, fullName: String, email: String, role: String, deptId: Long, pass: String) -> Unit,
+    onCreateUser: (email: String, fullName: String, role: String, deptId: Long) -> Unit,
+    onOpenImportCsvDialog: () -> Unit,
+    onCloseImportCsvDialog: () -> Unit,
+    onImportCsv: (String) -> Unit,
+    onDismissTempPassword: () -> Unit,
     onToggleLockUser: (com.example.laptrinhmang.core.model.User) -> Unit,
-    onOpenResetPasswordDialog: (com.example.laptrinhmang.core.model.User) -> Unit,
-    onCloseResetPasswordDialog: () -> Unit,
-    onResetPassword: (String) -> Unit,
+    onResetPassword: (com.example.laptrinhmang.core.model.User) -> Unit,
 
     rolesUiState: AdminRolesUiState,
     onPermissionToggle: (roleId: String, permissionCode: String, isChecked: Boolean) -> Unit,
@@ -87,9 +89,11 @@ fun AdminHomeScreen(
                     onOpenAddDialog = onOpenAddUserDialog,
                     onCloseAddDialog = onCloseAddUserDialog,
                     onCreateUser = onCreateUser,
+                    onOpenImportCsvDialog = onOpenImportCsvDialog,
+                    onCloseImportCsvDialog = onCloseImportCsvDialog,
+                    onImportCsv = onImportCsv,
+                    onDismissTempPassword = onDismissTempPassword,
                     onToggleLock = onToggleLockUser,
-                    onOpenResetPasswordDialog = onOpenResetPasswordDialog,
-                    onCloseResetPasswordDialog = onCloseResetPasswordDialog,
                     onResetPassword = onResetPassword
                 )
                 1 -> AdminRolesScreen(

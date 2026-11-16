@@ -13,11 +13,7 @@ import javax.inject.Singleton
 
 interface AuthRepository {
     val currentUserFlow: Flow<User?>
-    suspend fun login(identifier: String, password: String): NetworkResult<User>
-    suspend fun register(userCode: String, email: String, password: String, fullName: String): NetworkResult<OtpResponseData>
-    suspend fun activateAccount(email: String, otpCode: String): NetworkResult<Unit>
-    suspend fun requestForgotPassword(email: String): NetworkResult<Unit>
-    suspend fun resetPassword(email: String, otpCode: String, newPassword: String): NetworkResult<Unit>
+    suspend fun login(email: String, password: String): NetworkResult<User>
     suspend fun logout(): NetworkResult<Unit>
     suspend fun getProfile(): NetworkResult<User>
     suspend fun updateProfile(fullName: String, phone: String?, avatarUrl: String?): NetworkResult<User>
@@ -33,9 +29,9 @@ class AuthRepositoryImpl @Inject constructor(
 
     override val currentUserFlow: Flow<User?> = tokenManager.userFlow
 
-    override suspend fun login(identifier: String, password: String): NetworkResult<User> {
+    override suspend fun login(email: String, password: String): NetworkResult<User> {
         return handleApiCall {
-            val response = authApi.login(LoginRequest(identifier, password))
+            val response = authApi.login(LoginRequest(email, password))
             if (response.isSuccessful && response.body()?.data != null) {
                 val loginData = response.body()!!.data!!
                 tokenManager.saveTokens(loginData.accessToken, loginData.refreshToken)
@@ -45,54 +41,6 @@ class AuthRepositoryImpl @Inject constructor(
         }.let { result ->
             when (result) {
                 is NetworkResult.Success -> NetworkResult.Success(result.data.data!!.user)
-                is NetworkResult.Error -> result
-                is NetworkResult.Loading -> result
-            }
-        }
-    }
-
-    override suspend fun register(userCode: String, email: String, password: String, fullName: String): NetworkResult<OtpResponseData> {
-        return handleApiCall {
-            authApi.register(RegisterRequest(userCode, email, password, fullName))
-        }.let { result ->
-            when (result) {
-                is NetworkResult.Success -> NetworkResult.Success(result.data.data!!)
-                is NetworkResult.Error -> result
-                is NetworkResult.Loading -> result
-            }
-        }
-    }
-
-    override suspend fun activateAccount(email: String, otpCode: String): NetworkResult<Unit> {
-        return handleApiCall {
-            authApi.activateAccount(OtpVerifyRequest(email, otpCode))
-        }.let { result ->
-            when (result) {
-                is NetworkResult.Success -> NetworkResult.Success(Unit)
-                is NetworkResult.Error -> result
-                is NetworkResult.Loading -> result
-            }
-        }
-    }
-
-    override suspend fun requestForgotPassword(email: String): NetworkResult<Unit> {
-        return handleApiCall {
-            authApi.requestForgotPassword(ForgotPasswordRequest(email))
-        }.let { result ->
-            when (result) {
-                is NetworkResult.Success -> NetworkResult.Success(Unit)
-                is NetworkResult.Error -> result
-                is NetworkResult.Loading -> result
-            }
-        }
-    }
-
-    override suspend fun resetPassword(email: String, otpCode: String, newPassword: String): NetworkResult<Unit> {
-        return handleApiCall {
-            authApi.resetPassword(ResetPasswordRequest(email, otpCode, newPassword))
-        }.let { result ->
-            when (result) {
-                is NetworkResult.Success -> NetworkResult.Success(Unit)
                 is NetworkResult.Error -> result
                 is NetworkResult.Loading -> result
             }
@@ -144,7 +92,16 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun changePassword(oldPassword: String, newPassword: String): NetworkResult<Unit> {
         return handleApiCall {
-            authApi.changePassword(ChangePasswordRequest(oldPassword, newPassword))
+            val response = authApi.changePassword(ChangePasswordRequest(oldPassword, newPassword))
+            if (response.isSuccessful) {
+                // When password change succeeds, update cached user mustChangePassword to false
+                tokenManager.userFlow.collect { current ->
+                    if (current != null && current.mustChangePassword) {
+                        tokenManager.saveUser(current.copy(mustChangePassword = false))
+                    }
+                }
+            }
+            response
         }.let { result ->
             when (result) {
                 is NetworkResult.Success -> NetworkResult.Success(Unit)

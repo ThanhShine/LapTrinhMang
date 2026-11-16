@@ -13,7 +13,8 @@ data class User(
     @SerializedName("department_id") val departmentId: Long? = null,
     @SerializedName("department_name") val departmentName: String? = null,
     @SerializedName("avatar_url") val avatarUrl: String? = null,
-    @SerializedName("status") val status: UserStatus = UserStatus.ACTIVE
+    @SerializedName("status") val status: UserStatus = UserStatus.ACTIVE,
+    @SerializedName("must_change_password") val mustChangePassword: Boolean = false
 ) {
     fun hasPermission(permissionCode: String): Boolean {
         if (role == Role.ADMIN) return true
