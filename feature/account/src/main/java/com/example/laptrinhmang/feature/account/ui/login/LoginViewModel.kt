@@ -14,10 +14,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class LoginUiState(
-    val identifier: String = "",
+    val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val showContactAdminDialog: Boolean = false,
     val loggedInUser: User? = null
 )
 
@@ -29,18 +30,26 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    fun onIdentifierChanged(value: String) {
-        _uiState.update { it.copy(identifier = value, errorMessage = null) }
+    fun onEmailChanged(value: String) {
+        _uiState.update { it.copy(email = value, errorMessage = null) }
     }
 
     fun onPasswordChanged(value: String) {
         _uiState.update { it.copy(password = value, errorMessage = null) }
     }
 
+    fun openContactAdminDialog() {
+        _uiState.update { it.copy(showContactAdminDialog = true) }
+    }
+
+    fun closeContactAdminDialog() {
+        _uiState.update { it.copy(showContactAdminDialog = false) }
+    }
+
     fun login(onSuccess: (User) -> Unit = {}) {
         val current = _uiState.value
-        if (current.identifier.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Vui lòng nhập mã định danh hoặc email trường.") }
+        if (current.email.isBlank()) {
+            _uiState.update { it.copy(errorMessage = "Vui lòng nhập Email trường.") }
             return
         }
         if (current.password.isBlank()) {
@@ -50,7 +59,7 @@ class LoginViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            when (val result = authRepository.login(current.identifier, current.password)) {
+            when (val result = authRepository.login(current.email, current.password)) {
                 is NetworkResult.Success -> {
                     _uiState.update { it.copy(isLoading = false, loggedInUser = result.data) }
                     onSuccess(result.data)
@@ -68,20 +77,23 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    // Quick mock fill helper for 4 required main roles (Admin, Quản lý phòng, Giảng viên, Sinh viên)
+    // Quick mock fill helper for test accounts
     fun fillMockRoleCredentials(roleKey: String) {
         when (roleKey) {
             "ADMIN" -> {
-                _uiState.update { it.copy(identifier = "admin", password = "Password123@") }
+                _uiState.update { it.copy(email = "admin@dau.edu.vn", password = "Password123@") }
             }
             "ROOM_MANAGER" -> {
-                _uiState.update { it.copy(identifier = "quanly", password = "Password123@") }
+                _uiState.update { it.copy(email = "quanly@dau.edu.vn", password = "Password123@") }
             }
             "LECTURER" -> {
-                _uiState.update { it.copy(identifier = "giangvien", password = "Password123@") }
+                _uiState.update { it.copy(email = "giangvien@dau.edu.vn", password = "Password123@") }
             }
             "STUDENT" -> {
-                _uiState.update { it.copy(identifier = "2051220001", password = "Password123@") }
+                _uiState.update { it.copy(email = "sv.2051220001@dau.edu.vn", password = "Password123@") }
+            }
+            "MUST_CHANGE_PASS" -> {
+                _uiState.update { it.copy(email = "newuser@dau.edu.vn", password = "TempPass123@") }
             }
         }
     }

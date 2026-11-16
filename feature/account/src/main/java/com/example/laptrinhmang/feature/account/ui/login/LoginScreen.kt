@@ -11,10 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -41,12 +42,12 @@ import com.example.laptrinhmang.core.model.User
 @Composable
 fun LoginScreen(
     uiState: LoginUiState,
-    onIdentifierChanged: (String) -> Unit,
+    onEmailChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onLoginClick: (onSuccess: (User) -> Unit) -> Unit,
     onQuickFillRole: (String) -> Unit,
-    onNavigateToRegister: () -> Unit,
-    onNavigateToForgotPassword: () -> Unit,
+    onOpenContactAdmin: () -> Unit,
+    onCloseContactAdmin: () -> Unit,
     onLoginSuccess: (User) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -73,10 +74,11 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
-            value = uiState.identifier,
-            onValueChange = onIdentifierChanged,
-            label = { Text("MSSV/MSGV hoặc Email") },
-            leadingIcon = { Icon(imageVector = Icons.Default.Person, contentDescription = null) },
+            value = uiState.email,
+            onValueChange = onEmailChanged,
+            label = { Text("Email trường (@dau.edu.vn)") },
+            leadingIcon = { Icon(imageVector = Icons.Default.Email, contentDescription = null) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -119,7 +121,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            TextButton(onClick = onNavigateToForgotPassword) {
+            TextButton(onClick = onOpenContactAdmin) {
                 Text("Quên mật khẩu?")
             }
         }
@@ -143,23 +145,10 @@ fun LoginScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Chưa có tài khoản?")
-            TextButton(onClick = onNavigateToRegister) {
-                Text("Đăng ký ngay")
-            }
-        }
-
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Dữ liệu thử nghiệm (Thử 4 vai trò):",
+            text = "Dữ liệu thử nghiệm (Thử các vai trò):",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -188,5 +177,24 @@ fun LoginScreen(
                 modifier = Modifier.weight(1f)
             ) { Text("S.Viên", style = MaterialTheme.typography.labelSmall) }
         }
+
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedButton(
+            onClick = { onQuickFillRole("MUST_CHANGE_PASS") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Thử tài khoản cần Đổi mật khẩu lần đầu (mustChangePassword)", style = MaterialTheme.typography.labelSmall)
+        }
+    }
+
+    if (uiState.showContactAdminDialog) {
+        AlertDialog(
+            onDismissRequest = onCloseContactAdmin,
+            title = { Text("Quên mật khẩu") },
+            text = { Text("Vui lòng liên hệ Quản trị viên (Phòng Cơ sở vật chất / Admin) để được cấp lại mật khẩu tạm thời.") },
+            confirmButton = {
+                TextButton(onClick = onCloseContactAdmin) { Text("Đóng") }
+            }
+        )
     }
 }

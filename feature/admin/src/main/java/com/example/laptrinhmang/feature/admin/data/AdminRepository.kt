@@ -10,10 +10,11 @@ import javax.inject.Singleton
 
 interface AdminRepository {
     suspend fun getUsers(page: Int = 1, search: String? = null, role: String? = null, status: String? = null): NetworkResult<PaginatedData<User>>
-    suspend fun createUser(request: CreateUserRequest): NetworkResult<Unit>
+    suspend fun createUser(request: CreateUserRequest): NetworkResult<CreateUserResponseData>
+    suspend fun importUsersCsv(csvContent: String): NetworkResult<ImportCsvResult>
     suspend fun updateUser(id: Long, request: UpdateUserRequest): NetworkResult<Unit>
     suspend fun updateUserStatus(id: Long, status: UserStatus): NetworkResult<Unit>
-    suspend fun resetUserPassword(id: Long, newPassword: String): NetworkResult<Unit>
+    suspend fun resetUserPassword(id: Long): NetworkResult<ResetUserPasswordResponseData>
     suspend fun getRoles(): NetworkResult<List<RolePermissionItem>>
     suspend fun updateRolePermissions(roleId: String, permissions: List<String>): NetworkResult<Unit>
     suspend fun getDepartments(): NetworkResult<List<DepartmentItem>>
@@ -39,10 +40,27 @@ class AdminRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun createUser(request: CreateUserRequest): NetworkResult<Unit> {
+    override suspend fun createUser(request: CreateUserRequest): NetworkResult<CreateUserResponseData> {
         return try {
-            adminApi.createUser(request)
-            NetworkResult.Success(Unit)
+            val response = adminApi.createUser(request)
+            if (response.isSuccessful && response.body()?.data != null) {
+                NetworkResult.Success(response.body()!!.data!!)
+            } else {
+                NetworkResult.Error(ApiError(response.code(), message = "Không thể tạo tài khoản"))
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(ApiError(500, message = e.localizedMessage ?: "Lỗi kết nối"))
+        }
+    }
+
+    override suspend fun importUsersCsv(csvContent: String): NetworkResult<ImportCsvResult> {
+        return try {
+            val response = adminApi.importUsersCsv(ImportCsvRequest(csvContent))
+            if (response.isSuccessful && response.body()?.data != null) {
+                NetworkResult.Success(response.body()!!.data!!)
+            } else {
+                NetworkResult.Error(ApiError(response.code(), message = "Lỗi khi nhập dữ liệu CSV"))
+            }
         } catch (e: Exception) {
             NetworkResult.Error(ApiError(500, message = e.localizedMessage ?: "Lỗi kết nối"))
         }
@@ -66,10 +84,14 @@ class AdminRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun resetUserPassword(id: Long, newPassword: String): NetworkResult<Unit> {
+    override suspend fun resetUserPassword(id: Long): NetworkResult<ResetUserPasswordResponseData> {
         return try {
-            adminApi.resetUserPassword(id, ResetUserPasswordRequest(newPassword))
-            NetworkResult.Success(Unit)
+            val response = adminApi.resetUserPassword(id, ResetUserPasswordRequest())
+            if (response.isSuccessful && response.body()?.data != null) {
+                NetworkResult.Success(response.body()!!.data!!)
+            } else {
+                NetworkResult.Error(ApiError(response.code(), message = "Lỗi khi đặt lại mật khẩu"))
+            }
         } catch (e: Exception) {
             NetworkResult.Error(ApiError(500, message = e.localizedMessage ?: "Lỗi kết nối"))
         }

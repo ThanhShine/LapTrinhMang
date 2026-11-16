@@ -4,7 +4,6 @@ import com.example.laptrinhmang.core.model.NetworkResult
 import com.example.laptrinhmang.core.model.Role
 import com.example.laptrinhmang.core.model.User
 import com.example.laptrinhmang.feature.account.data.AuthRepository
-import com.example.laptrinhmang.feature.account.data.OtpResponseData
 import com.example.laptrinhmang.feature.account.ui.login.LoginViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,17 +40,17 @@ class LoginViewModelTest {
     }
 
     @Test
-    fun login_with_empty_identifier_shows_error() = runTest {
-        viewModel.onIdentifierChanged("")
+    fun login_with_empty_email_shows_error() = runTest {
+        viewModel.onEmailChanged("")
         viewModel.onPasswordChanged("Password123@")
         viewModel.login()
 
-        assertEquals("Vui lòng nhập mã định danh hoặc email trường.", viewModel.uiState.value.errorMessage)
+        assertEquals("Vui lòng nhập Email trường.", viewModel.uiState.value.errorMessage)
     }
 
     @Test
     fun login_with_empty_password_shows_error() = runTest {
-        viewModel.onIdentifierChanged("admin")
+        viewModel.onEmailChanged("admin@dau.edu.vn")
         viewModel.onPasswordChanged("")
         viewModel.login()
 
@@ -60,7 +59,7 @@ class LoginViewModelTest {
 
     @Test
     fun login_success_updates_state_with_user() = runTest {
-        viewModel.onIdentifierChanged("admin")
+        viewModel.onEmailChanged("admin@dau.edu.vn")
         viewModel.onPasswordChanged("Password123@")
         viewModel.login()
 
@@ -68,14 +67,14 @@ class LoginViewModelTest {
 
         assertNull(viewModel.uiState.value.errorMessage)
         assertNotNull(viewModel.uiState.value.loggedInUser)
-        assertEquals("admin", viewModel.uiState.value.loggedInUser?.username)
+        assertEquals("admin@dau.edu.vn", viewModel.uiState.value.loggedInUser?.email)
         assertEquals(Role.ADMIN, viewModel.uiState.value.loggedInUser?.role)
     }
 
     @Test
     fun fill_mock_role_credentials_populates_correctly() {
         viewModel.fillMockRoleCredentials("ROOM_MANAGER")
-        assertEquals("quanly", viewModel.uiState.value.identifier)
+        assertEquals("quanly@dau.edu.vn", viewModel.uiState.value.email)
         assertEquals("Password123@", viewModel.uiState.value.password)
     }
 }
@@ -83,31 +82,15 @@ class LoginViewModelTest {
 private class FakeAuthRepository : AuthRepository {
     override val currentUserFlow: Flow<User?> = flowOf(null)
 
-    override suspend fun login(identifier: String, password: String): NetworkResult<User> {
+    override suspend fun login(email: String, password: String): NetworkResult<User> {
         val user = User(
             id = 1,
-            username = identifier,
+            username = "user123",
             fullName = "Fake User",
-            email = "$identifier@dau.edu.vn",
-            role = if (identifier == "admin") Role.ADMIN else Role.STUDENT
+            email = email,
+            role = if (email.contains("admin")) Role.ADMIN else Role.STUDENT
         )
         return NetworkResult.Success(user)
-    }
-
-    override suspend fun register(userCode: String, email: String, password: String, fullName: String): NetworkResult<OtpResponseData> {
-        return NetworkResult.Success(OtpResponseData(email))
-    }
-
-    override suspend fun activateAccount(email: String, otpCode: String): NetworkResult<Unit> {
-        return NetworkResult.Success(Unit)
-    }
-
-    override suspend fun requestForgotPassword(email: String): NetworkResult<Unit> {
-        return NetworkResult.Success(Unit)
-    }
-
-    override suspend fun resetPassword(email: String, otpCode: String, newPassword: String): NetworkResult<Unit> {
-        return NetworkResult.Success(Unit)
     }
 
     override suspend fun logout(): NetworkResult<Unit> = NetworkResult.Success(Unit)

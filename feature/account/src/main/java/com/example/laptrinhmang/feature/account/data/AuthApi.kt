@@ -13,18 +13,6 @@ interface AuthApi {
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): Response<ApiResponse<LoginResponseData>>
 
-    @POST("auth/register")
-    suspend fun register(@Body request: RegisterRequest): Response<ApiResponse<OtpResponseData>>
-
-    @POST("auth/activate")
-    suspend fun activateAccount(@Body request: OtpVerifyRequest): Response<ApiResponse<Unit>>
-
-    @POST("auth/forgot-password/request")
-    suspend fun requestForgotPassword(@Body request: ForgotPasswordRequest): Response<ApiResponse<Unit>>
-
-    @POST("auth/forgot-password/reset")
-    suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<ApiResponse<Unit>>
-
     @POST("auth/logout")
     suspend fun logout(): Response<ApiResponse<Unit>>
 

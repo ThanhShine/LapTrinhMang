@@ -8,21 +8,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,12 +38,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.laptrinhmang.core.model.User
 import com.example.laptrinhmang.core.model.UserStatus
 import com.example.laptrinhmang.core.ui.components.DauEmptyState
 import com.example.laptrinhmang.core.ui.components.DauErrorState
 import com.example.laptrinhmang.core.ui.components.DauLoadingState
+import com.example.laptrinhmang.feature.admin.data.ImportCsvResult
 
 @Composable
 fun AdminUsersScreen(
@@ -47,17 +53,26 @@ fun AdminUsersScreen(
     onSearchChanged: (String) -> Unit,
     onOpenAddDialog: () -> Unit,
     onCloseAddDialog: () -> Unit,
-    onCreateUser: (username: String, fullName: String, email: String, role: String, deptId: Long, pass: String) -> Unit,
+    onCreateUser: (email: String, fullName: String, role: String, deptId: Long) -> Unit,
+    onOpenImportCsvDialog: () -> Unit,
+    onCloseImportCsvDialog: () -> Unit,
+    onImportCsv: (csvContent: String) -> Unit,
+    onDismissTempPassword: () -> Unit,
     onToggleLock: (User) -> Unit,
-    onOpenResetPasswordDialog: (User) -> Unit,
-    onCloseResetPasswordDialog: () -> Unit,
-    onResetPassword: (newPassword: String) -> Unit,
+    onResetPassword: (User) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = onOpenAddDialog) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Thêm người dùng")
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = onOpenImportCsvDialog) {
+                    Icon(imageVector = Icons.Default.FileUpload, contentDescription = null)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Nhập từ file CSV")
+                }
+                FloatingActionButton(onClick = onOpenAddDialog) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Thêm người dùng")
+                }
             }
         },
         modifier = modifier
@@ -71,7 +86,7 @@ fun AdminUsersScreen(
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = onSearchChanged,
-                label = { Text("Tìm kiếm theo tên/mã/email") },
+                label = { Text("Tìm kiếm theo email/tên") },
                 leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -107,15 +122,17 @@ fun AdminUsersScreen(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(text = user.fullName, style = MaterialTheme.typography.titleMedium)
                                         Text(
-                                            text = "${user.username} | ${user.role.displayName}",
+                                            text = "${user.email} | ${user.role.displayName}",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.primary
                                         )
-                                        Text(
-                                            text = user.email,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                                        if (user.mustChangePassword) {
+                                            Text(
+                                                text = "Cần đổi mật khẩu lần đầu",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.error
+                                            )
+                                        }
                                     }
 
                                     Row {
@@ -126,7 +143,7 @@ fun AdminUsersScreen(
                                                 tint = if (isLocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                                             )
                                         }
-                                        IconButton(onClick = { onOpenResetPasswordDialog(user) }) {
+                                        IconButton(onClick = { onResetPassword(user) }) {
                                             Icon(
                                                 imageVector = Icons.Default.LockReset,
                                                 contentDescription = "Reset password"
@@ -146,11 +163,29 @@ fun AdminUsersScreen(
         AddUserDialog(onDismiss = onCloseAddDialog, onSave = onCreateUser)
     }
 
-    uiState.resettingPasswordUser?.let { user ->
-        ResetPasswordDialog(
-            username = user.username,
-            onDismiss = onCloseResetPasswordDialog,
-            onConfirm = onResetPassword
+    if (uiState.showImportCsvDialog) {
+        ImportCsvDialog(
+            result = uiState.csvImportResult,
+            onDismiss = onCloseImportCsvDialog,
+            onImport = onImportCsv
+        )
+    }
+
+    uiState.createdTempPassword?.let { tempPass ->
+        TempPasswordDialog(
+            title = "Tài khoản đã tạo thành công",
+            message = "Mật khẩu tạm được khởi tạo cho người dùng mới. Vui lòng sao chép và cung cấp cho người dùng. Mật khẩu này chỉ hiển thị đúng MỘT lần:",
+            tempPassword = tempPass,
+            onDismiss = onDismissTempPassword
+        )
+    }
+
+    uiState.resetTempPassword?.let { tempPass ->
+        TempPasswordDialog(
+            title = "Đặt lại mật khẩu thành công",
+            message = "Mật khẩu tạm mới đã được tạo. Vui lòng sao chép và cung cấp cho người dùng. Mật khẩu chỉ hiển thị đúng MỘT lần:",
+            tempPassword = tempPass,
+            onDismiss = onDismissTempPassword
         )
     }
 }
@@ -158,36 +193,36 @@ fun AdminUsersScreen(
 @Composable
 private fun AddUserDialog(
     onDismiss: () -> Unit,
-    onSave: (username: String, fullName: String, email: String, role: String, deptId: Long, pass: String) -> Unit
+    onSave: (email: String, fullName: String, role: String, deptId: Long) -> Unit
 ) {
-    var username by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var role by remember { mutableStateOf("STUDENT") }
-    var password by remember { mutableStateOf("Password123@") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Thêm người dùng mới") },
+        title = { Text("Thêm tài khoản mới (Cấp mật khẩu tạm)") },
         text = {
             Column {
-                OutlinedTextField(value = username, onValueChange = { username = it }, label = { Text("Mã MSSV/MSGV") }, modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(value = fullName, onValueChange = { fullName = it }, label = { Text("Họ và tên") }, modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email trường") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email trường (@dau.edu.vn)") }, modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(value = role, onValueChange = { role = it }, label = { Text("Vai trò (STUDENT/LECTURER/ROOM_MANAGER/ADMIN)") }, modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Mật khẩu ban đầu") }, modifier = Modifier.fillMaxWidth())
+                Text(
+                    text = "* Hệ thống sẽ tự động sinh mật khẩu tạm ngẫu nhiên và bắt buộc người dùng đổi mật khẩu khi đăng nhập lần đầu.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         },
         confirmButton = {
             TextButton(
-                onClick = { onSave(username, fullName, email, role, 10L, password) },
-                enabled = username.isNotBlank() && fullName.isNotBlank()
+                onClick = { onSave(email, fullName, role, 10L) },
+                enabled = email.isNotBlank() && fullName.isNotBlank()
             ) {
-                Text("Thêm")
+                Text("Tạo tài khoản")
             }
         },
         dismissButton = {
@@ -197,38 +232,126 @@ private fun AddUserDialog(
 }
 
 @Composable
-private fun ResetPasswordDialog(
-    username: String,
+private fun ImportCsvDialog(
+    result: ImportCsvResult?,
     onDismiss: () -> Unit,
-    onConfirm: (newPassword: String) -> Unit
+    onImport: (csvContent: String) -> Unit
 ) {
-    var newPassword by remember { mutableStateOf("") }
+    var csvText by remember {
+        mutableStateOf(
+            "email,full_name,role,department_id\n" +
+            "sv.2051220091@dau.edu.vn,Nguyễn Văn Sinh,STUDENT,10\n" +
+            "gv.tranvan@dau.edu.vn,Trần Văn Giảng,LECTURER,10"
+        )
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Đặt lại mật khẩu") },
+        title = { Text("Nhập tài khoản từ file CSV") },
         text = {
             Column {
-                Text(text = "Đặt lại mật khẩu mới cho tài khoản: $username")
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = newPassword,
-                    onValueChange = { newPassword = it },
-                    label = { Text("Mật khẩu mới") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                if (result == null) {
+                    Text(
+                        text = "Định dạng file CSV (Dòng đầu tiên là tiêu đề):\nemail,full_name,role,department_id",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = csvText,
+                        onValueChange = { csvText = it },
+                        label = { Text("Nội dung CSV") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                    )
+                } else {
+                    Text(
+                        text = "Kết quả nhập CSV (${result.successCount}/${result.totalRows} thành công):",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyColumn(modifier = Modifier.height(200.dp)) {
+                        items(result.results) { item ->
+                            val isSuccess = item.status == "SUCCESS"
+                            Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                                Text(
+                                    text = "Dòng ${item.line}: ${item.email} - ${if (isSuccess) "THÀNH CÔNG" else "THẤT BẠI"}",
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSuccess) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                if (isSuccess && item.temporaryPassword != null) {
+                                    Text(
+                                        text = "Mật khẩu tạm: ${item.temporaryPassword}",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
+                                if (!isSuccess && item.errorMessage != null) {
+                                    Text(
+                                        text = "Lỗi: ${item.errorMessage}",
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = { onConfirm(newPassword) },
-                enabled = newPassword.length >= 8
-            ) {
-                Text("Xác nhận")
+            if (result == null) {
+                TextButton(
+                    onClick = { onImport(csvText) },
+                    enabled = csvText.isNotBlank()
+                ) {
+                    Text("Bắt đầu nhập")
+                }
+            } else {
+                TextButton(onClick = onDismiss) {
+                    Text("Đóng")
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Hủy") }
+            if (result == null) {
+                TextButton(onClick = onDismiss) { Text("Hủy") }
+            }
+        }
+    )
+}
+
+@Composable
+private fun TempPasswordDialog(
+    title: String,
+    message: String,
+    tempPassword: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column {
+                Text(text = message, style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = tempPassword,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) { Text("Đã sao chép & Đóng") }
         }
     )
 }

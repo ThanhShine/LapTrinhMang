@@ -4,12 +4,15 @@ import com.example.laptrinhmang.core.model.UserStatus
 import com.google.gson.annotations.SerializedName
 
 data class CreateUserRequest(
-    @SerializedName("username") val username: String,
-    @SerializedName("full_name") val fullName: String,
     @SerializedName("email") val email: String,
+    @SerializedName("full_name") val fullName: String,
     @SerializedName("role") val role: String,
-    @SerializedName("department_id") val departmentId: Long,
-    @SerializedName("password") val password: String
+    @SerializedName("department_id") val departmentId: Long
+)
+
+data class CreateUserResponseData(
+    @SerializedName("user_id") val userId: Long,
+    @SerializedName("temporary_password") val temporaryPassword: String
 )
 
 data class UpdateUserRequest(
@@ -23,7 +26,30 @@ data class UserStatusRequest(
 )
 
 data class ResetUserPasswordRequest(
-    @SerializedName("new_password") val newPassword: String
+    @SerializedName("new_password") val newPassword: String? = null
+)
+
+data class ResetUserPasswordResponseData(
+    @SerializedName("temporary_password") val temporaryPassword: String
+)
+
+data class ImportCsvRequest(
+    @SerializedName("csv_content") val csvContent: String
+)
+
+data class ImportCsvResult(
+    @SerializedName("total_rows") val totalRows: Int,
+    @SerializedName("success_count") val successCount: Int,
+    @SerializedName("failure_count") val failureCount: Int,
+    @SerializedName("results") val results: List<CsvLineResult>
+)
+
+data class CsvLineResult(
+    @SerializedName("line") val line: Int,
+    @SerializedName("email") val email: String,
+    @SerializedName("status") val status: String, // "SUCCESS" | "FAILED"
+    @SerializedName("temporary_password") val temporaryPassword: String? = null,
+    @SerializedName("error_message") val errorMessage: String? = null
 )
 
 data class RolePermissionItem(
