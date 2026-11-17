@@ -1,213 +1,204 @@
-# DAU RMS - Hệ thống quản lý phòng học (Trường Đại học Kiến trúc Đà Nẵng)
+<div align="center">
 
-Dự án Android ứng dụng quản lý phòng học cho Trường ĐH Kiến trúc Đà Nẵng (DAU RMS) được xây dựng theo kiến trúc Gradle Multi-Module, Jetpack Compose, Material 3, MVVM, Hilt, Retrofit + OkHttp và DataStore mã hóa.
+# 🏫 DAU RMS
+
+### Ứng dụng quản lý và đặt phòng học
+**Trường Đại học Kiến trúc Đà Nẵng**
+
+Đặt phòng nhanh · Duyệt theo quy trình · Check-in bằng QR · Báo sự cố tức thì
+
+![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4)
+![Node.js](https://img.shields.io/badge/Backend-Node.js%20%2B%20MySQL-339933?logo=nodedotjs&logoColor=white)
+
+<!-- Thay bằng ảnh thật: chụp 3-4 màn hình ghép lại thành một ảnh banner -->
+<img src="docs/images/banner.png" alt="Giao diện DAU RMS" width="820">
+
+</div>
 
 ---
 
-## 1. Yêu cầu môi trường & Cấu hình (Environment Requirements)
+## 📖 Giới thiệu
 
-- **Android Studio**: Android Studio Ladybug (2024.2.1+) hoặc mới hơn.
-- **JDK**: Java 17 (OpenJDK 17 / Corretto 17).
-- **Android Gradle Plugin (AGP)**: `8.7.2`
-- **Kotlin**: `2.0.21`
-- **Min SDK**: `26` (Android 8.0) | **Compile SDK**: `35`
+Trước đây, việc xin phòng học, chờ duyệt và kiểm tra ai đang dùng phòng phải làm thủ công, dễ **trùng lịch** và khó theo dõi. **DAU RMS** đưa toàn bộ quy trình đó lên điện thoại:
+
+- Sinh viên, giảng viên **xem phòng trống và đặt phòng** chỉ vài chạm.
+- Quản lý phòng **duyệt hoặc từ chối** đơn, hệ thống tự chặn đặt trùng.
+- Người dùng **check-in bằng mã QR** khi đến phòng, trả phòng đúng giờ.
+- Gặp hỏng hóc thì **báo sự cố** ngay trong ứng dụng.
+- Quản trị viên **cấp tài khoản và phân quyền** cho từng vai trò.
+
+Giao diện **hoàn toàn bằng tiếng Việt**, thiết kế theo Material 3.
 
 ---
 
-## 2. Cấu trúc Gradle Multi-Module (Module Structure)
+## 📱 Giao diện ứng dụng
+
+
+| Đăng nhập | Đổi mật khẩu | Quy Trình Tự Phê Duyệt Tự Động |
+|:---:|:---:|:---:|
+| <img src="docs/images/01-dang-nhap.png" width="220"> | <img src="docs/images/02-doi-mat-khau.png" width="220"> | <img src="docs/images/03-quy-trinh-tu-phe-duyet.png" width="220"> |
+
+| Danh mục phòng | Đặt phòng | Duyệt đơn |
+|:---:|:---:|:---:|
+| <img src="docs/images/04-danh-muc-phong.png" width="220"> | <img src="docs/images/05-dat-phong.png" width="220"> | <img src="docs/images/06-duyet-don.png" width="220"> |
+
+| Check-in QR | Báo sự cố | Quản trị người dùng |
+|:---:|:---:|:---:|
+| <img src="docs/images/07-checkin-qr.png" width="220"> | <img src="docs/images/08-bao-su-co.png" width="220"> | <img src="docs/images/09-quan-tri.png" width="220"> |
+
+---
+
+## ✨ Tính năng chính
+
+### 👤 Tài khoản
+- Đăng nhập bằng tài khoản **do Quản trị viên cấp** (không tự đăng ký).
+- **Bắt buộc đổi mật khẩu** ở lần đăng nhập đầu tiên.
+- Xem và sửa hồ sơ cá nhân, đổi mật khẩu.
+- Nhận thông báo ngay trong ứng dụng và thông báo đẩy.
+
+### 📅 Đặt phòng
+- Tra cứu phòng theo tòa nhà, loại phòng, thiết bị.
+- Đặt phòng theo ngày giờ; hệ thống **kiểm tra và chặn trùng lịch**.
+- Chia sẻ lượt đặt phòng với người khác, theo dõi trạng thái đơn.
+
+### ✅ Phê duyệt
+- Quản lý phòng xem đơn chờ duyệt, **duyệt hoặc từ chối** kèm lý do.
+- Người đặt nhận thông báo kết quả ngay.
+
+### 📷 Check-in và sự cố
+- **Check-in bằng QR** trong khung giờ: từ 15 phút trước đến 30 phút sau giờ bắt đầu.
+- Trả phòng với thời gian ân hạn 15 phút.
+- Báo sự cố theo 4 mức: **Thấp, Trung bình, Cao, Nghiêm trọng**.
+
+### 🛠️ Quản trị
+- Tạo, khóa, mở khóa tài khoản; **cấp mật khẩu tạm** cho người dùng mới.
+- Quản lý **9 vai trò** và **12 quyền**, quản lý đơn vị (khoa, phòng ban).
+- **Nhật ký hoạt động** để truy vết thao tác.
+
+---
+
+## 👥 Ai dùng được gì?
+
+Ứng dụng có **9 vai trò**. Thanh điều hướng và các nút trên màn hình thay đổi theo quyền của từng người, nên mỗi người chỉ thấy đúng chức năng của mình.
+
+| Vai trò | Dùng để |
+|---|---|
+| Sinh viên | Xem phòng, đặt phòng, check-in, báo sự cố |
+| Giảng viên | Như sinh viên, ưu tiên đặt phòng cho lớp học |
+| Quản lý phòng | Duyệt đơn, theo dõi phòng và sự cố |
+| Quản trị viên | Cấp tài khoản, phân quyền, xem nhật ký |
+
+Các vai trò khác do Quản trị viên cấu hình trong ứng dụng.
+
+---
+
+## 🔐 Cách có tài khoản
+
+DAU RMS **không có đăng ký công khai**. Để dùng ứng dụng:
+
+1. Liên hệ **Quản trị viên** để được cấp tài khoản.
+2. Nhận **email đăng nhập và mật khẩu tạm**.
+3. Đăng nhập lần đầu, ứng dụng yêu cầu **đặt mật khẩu mới**.
+4. Sau đó dùng ứng dụng bình thường.
+
+---
+
+## 🧪 Dùng thử nhanh (dữ liệu mẫu)
+
+Bản dữ liệu mẫu (flavor `mock`) chạy không cần máy chủ, dùng để xem giao diện:
+
+| Vai trò | Tài khoản | Mật khẩu |
+|---|---|---|
+| Quản trị viên | `admin` | `Password123@` |
+| Quản lý phòng | `quanly` | `Password123@` |
+| Giảng viên | `giangvien` | `Password123@` |
+| Sinh viên | `2051220001` | `Password123@` |
+
+> Đây chỉ là tài khoản của dữ liệu giả. Bản chạy thật dùng tài khoản do Quản trị viên cấp.
+
+---
+
+## 🚀 Cài đặt và chạy
+
+### Yêu cầu
+- Android Studio Ladybug (2024.2.1) trở lên, **JDK 17**
+- Android 8.0 trở lên (Min SDK 26, Compile SDK 35)
+
+### Chạy ứng dụng
+```bash
+git clone https://github.com/ThanhShine/LapTrinhMang.git
+cd LapTrinhMang
+```
+Mở thư mục bằng Android Studio, bấm **Sync Now**, rồi chọn biến thể build:
+
+| Biến thể | Dùng khi | Dữ liệu |
+|---|---|---|
+| `mockDebug` | Xem giao diện, không có máy chủ | Dữ liệu giả |
+| `devDebug` | Chạy với backend thật | MySQL qua API |
+
+Dòng lệnh: `gradlew assembleDebug` để dựng APK, `gradlew test` để chạy kiểm thử.
+
+### Chạy cùng backend thật (biến thể `devDebug`)
+1. Cài **MySQL 8**, nhập file `dau_rms.sql` để tạo CSDL.
+2. Vào thư mục `backend/`, sao chép `.env.example` thành `.env` rồi điền thông tin của bạn (**không đưa `.env` lên GitHub**).
+3. Chạy `npm install`, rồi `npm run create-admin` để tạo tài khoản Quản trị viên đầu tiên.
+4. Chạy `npm start`, máy chủ lắng nghe ở cổng `3000`.
+5. Trên máy ảo Android, ứng dụng gọi máy chủ qua `http://10.0.2.2:3000/api/v1/`.
+
+---
+
+## 🧱 Công nghệ
+
+| Phần | Công nghệ |
+|---|---|
+| Ứng dụng Android | Kotlin, Jetpack Compose, Material 3, MVVM, Hilt, Navigation Compose |
+| Mạng và lưu trữ | Retrofit, OkHttp, DataStore (token mã hóa) |
+| Quét mã QR | CameraX, ML Kit |
+| Thông báo | Firebase Cloud Messaging |
+| Backend | Node.js 20, Express, JWT, bcrypt |
+| Cơ sở dữ liệu | MySQL 8 (27 bảng) |
 
 ```text
 LapTrinhMang/
-├── app/                  # Module ứng dụng chính, Hilt Application & Main Navigation Host
+├── app/                  # Ứng dụng chính, điều hướng
 ├── core/
-│   ├── model/            # Data models, Role, Permission, NetworkResult, ApiError
-│   ├── network/          # Retrofit, OkHttp, AuthInterceptor, Encrypted TokenManager, MockDataInterceptor
-│   └── ui/               # Material 3 Theme, Common UI Components, Dynamic BottomNav, RequirePermission
-└── feature/
-    ├── account/          # PH1: Đăng ký, Đăng nhập, OTP, Quên mật khẩu, Hồ sơ, FCM Push Notification
-    ├── booking/          # Đặt phòng (TV2 phụ trách)
-    ├── approval/         # Phê duyệt đơn đặt phòng (TV3 phụ trách)
-    ├── checkin/          # Check-in & Báo cáo sự cố (TV4 phụ trách)
-    └── admin/            # PH5: Quản lý người dùng, Vai trò & Quyền, Đơn vị, Audit Log
+│   ├── model/            # Mô hình dữ liệu, vai trò, quyền
+│   ├── network/          # Retrofit, JWT, token mã hóa, dữ liệu giả
+│   └── ui/               # Giao diện chung, phân quyền trên màn hình
+├── feature/
+│   ├── account/          # Tài khoản, hồ sơ, thông báo
+│   ├── booking/          # Đặt phòng
+│   ├── approval/         # Phê duyệt
+│   ├── checkin/          # Check-in, sự cố
+│   └── admin/            # Quản trị người dùng, vai trò, đơn vị
+├── backend/              # Máy chủ Node.js (nếu có trong kho này)
+└── docs/                 # Tài liệu API và báo cáo
 ```
 
 ---
 
-## 3. Hướng dẫn Clone, Build & Chạy thử (Quick Start)
+## 👨‍💻 Nhóm thực hiện
 
-### 3.1 Clone Repository
-```bash
-git clone <repository-url>
-cd LapTrinhMang
-```
-
-### 3.2 Build APK Debug
-Sử dụng Gradle Wrapper để biên dịch ứng dụng:
-```bash
-# Trên Linux / macOS / Git Bash
-./gradlew assembleDebug
-
-# Trên Windows Command Prompt / PowerShell
-gradlew assembleDebug
-```
-
-### 3.3 Chạy Unit Test
-```bash
-./gradlew test
-```
-
----
-
-## 4. Cấu hình Dữ liệu giả (Mock Data Configuration)
-
-Ứng dụng hỗ trợ bật/tắt Mock Data giả lập API không cần kết nối Server thật thông qua `BuildConfig.USE_MOCK_DATA`.
-
-Cấu hình trong `app/build.gradle` hoặc `core/network/build.gradle`:
-```groovy
-buildConfigField "Boolean", "USE_MOCK_DATA", "true"  // Set false để gọi Server API thật
-```
-
-### Tài khoản thử nghiệm dữ liệu giả (Mock Logins):
-- **Quản trị viên (`ADMIN`)**: `admin` / `Password123@`
-- **Quản lý phòng (`ROOM_MANAGER`)**: `quanly` / `Password123@`
-- **Giảng viên (`LECTURER`)**: `giangvien` / `Password123@`
-- **Sinh viên (`STUDENT`)**: `2051220001` / `Password123@`
-
----
-
-## 5. Quy ước đặt tên nhánh & Commit (Git Branching Conventions)
-
-Dự án áp dụng mô hình phân chia nhánh theo tính năng (Feature Branching):
-
-- Nhánh chính: `main` (chỉ chứa code đã test kỹ và được duyệt PR).
-- Nhánh tính năng theo module:
-  - Thành viên 1 (TV1): `feature/account-<tên-chức-năng>` hoặc `feature/admin-<tên-chức-năng>`
-  - Thành viên 2 (TV2): `feature/booking-<tên-chức-năng>`
-  - Thành viên 3 (TV3): `feature/approval-<tên-chức-năng>`
-  - Thành viên 4 (TV4): `feature/checkin-<tên-chức-năng>`
-
-### Quy ước cú pháp Commit:
-- `feat: ...` : Thêm tính năng mới
-- `fix: ...` : Sửa lỗi
-- `docs: ...` : Cập nhật tài liệu
-- `refactor: ...` : Cấu trúc lại mã nguồn mà không đổi logic
-- `test: ...` : Bổ sung hoặc sửa unit test
-
----
-
-## 6. Tài liệu Hợp đồng API (API Contracts)
-
-Chi tiết tài liệu RESTful API endpoints, định dạng JSON request/response và quy chuẩn mã lỗi vui lòng tham khảo file:
-👉 **[`docs/api-account.md`](docs/api-account.md)**
-
----
-
-## 7. Phân vùng file: ai được sửa gì (tránh xung đột)
-
-Mỗi người chỉ sửa trong module của mình. Xung đột Git thường xảy ra khi nhiều người cùng sửa một file chung.
-
-| Khu vực | Người được sửa | Người khác cần sửa thì |
-|---|---|---|
-| `feature/account/`, `feature/admin/` | TV1 | Nhắn TV1 |
-| `feature/booking/` | TV2 | Nhắn TV2 |
-| `feature/approval/` | TV3 | Nhắn TV3 |
-| `feature/checkin/` | TV4 (phần thống kê, thiết bị trong `feature/admin/` do TV4 làm trong thư mục con riêng) | Nhắn TV4 |
-| `core/network/`, `core/ui/`, `app/` | **Chỉ TV1** | Mở Issue hoặc PR nhỏ riêng, TV1 duyệt |
-| `core/model/` | Sửa chung, **phải báo cả nhóm trước** | Xem mục 9 |
-| `settings.gradle`, `build.gradle` gốc, `gradle/`, `AndroidManifest.xml` của `app`, NavGraph | **Chỉ TV1** | Nhắn TV1 |
-| `docs/api-<module>.md` | Người phụ trách module đó | Nhắn người đó |
-
-Quy tắc kèm theo:
-- Không format lại cả file, không "Optimize Imports" hay "Reformat Code" cho file không phải của mình. Việc này làm Git thấy cả file đã đổi.
-- Không đổi tên, di chuyển hay xóa file ngoài module của mình.
-- Đặt tên tài nguyên có tiền tố theo module để không trùng: `booking_`, `approval_`, `checkin_`, `account_`, `admin_` (ví dụ `booking_title`, `ic_checkin_scan`). Mỗi module giữ `strings.xml` và `colors.xml` riêng của mình, không thêm chuỗi vào `app/` hay `core/`.
-- Mỗi module tự khai báo Hilt module riêng (ví dụ `BookingModule.kt`), không gom vào file Hilt chung.
-
----
-
-## 8. Quy trình làm việc hằng ngày
-
-Làm theo đúng thứ tự này mỗi lần bắt đầu và kết thúc:
-
-```bash
-# Lần đầu: lấy nhánh develop và tạo nhánh riêng
-git checkout develop
-git pull origin develop
-git checkout -b feature/booking-<ten-chuc-nang>
-
-# Mỗi lần bắt đầu buổi làm việc: lấy code mới của nhóm về nhánh mình
-git checkout develop
-git pull origin develop
-git checkout feature/booking-<ten-chuc-nang>
-git merge develop
-
-# Trong lúc làm: commit nhỏ, thường xuyên
-git add <file hoặc thư mục của mình>
-git commit -m "feat: mô tả ngắn"
-
-# Kết thúc: đẩy nhánh của mình (không đẩy thẳng lên main hay develop)
-git push origin feature/booking-<ten-chuc-nang>
-```
-
-Nhánh `develop` là nhánh gộp chung của nhóm (TV1 tạo từ `main`). Code chỉ vào `main` khi cả nhóm đã chạy thử xong.
-
-Lưu ý:
-- Dùng `git add <đường dẫn>` thay vì `git add .` để không đưa nhầm file lạ lên.
-- Không dùng `git push --force` trên bất kỳ nhánh chung nào.
-- Mỗi PR chỉ chứa một chức năng, nhỏ để dễ review.
-
----
-
-## 9. Model dùng chung và hợp đồng API
-
-- Model nằm trong `core/model/` (ví dụ `Room`, `Booking`, `BookingStatus`, `Role`) dùng chung cho cả nhóm. Muốn **thêm trường** thì thêm trường có giá trị mặc định để code cũ không hỏng. Muốn **đổi tên hoặc xóa** trường thì báo cả nhóm trước và gộp bằng một PR riêng.
-- Mỗi người viết hợp đồng API của module mình trong `docs/api-<module>.md` trước khi code (`api-booking.md`, `api-approval.md`, `api-checkin.md`). Người khác đọc, không tự sửa.
-- App không tự quyết định trùng lịch, duyệt đơn hay check-in. Việc đó do server quyết định, app chỉ hiển thị kết quả.
-- Giờ dùng múi giờ `Asia/Ho_Chi_Minh`, gửi API dạng ISO-8601.
-
----
-
-## 10. Pull request và review
-
-1. Mở PR từ nhánh `feature/...` của mình vào `develop`.
-2. Mô tả PR gồm: làm chức năng nào, cách thử, ảnh chụp màn hình nếu có giao diện.
-3. Cần ít nhất 1 người khác review rồi mới gộp. Người tạo PR không tự gộp PR của mình khi chưa có review.
-4. Trước khi mở PR phải chạy `./gradlew assembleDebug` và `./gradlew test` thành công.
-5. Nếu PR báo conflict: lấy `develop` mới về nhánh mình (`git merge develop`), xử lý conflict trên máy mình rồi push lại, không xử lý trực tiếp trên GitHub khi chưa chắc.
-
-Gợi ý cho chủ repo: vào Settings → Branches, bật bảo vệ cho `main` và `develop` (bắt buộc pull request, bắt buộc 1 review).
-
----
-
-## 11. Xử lý lỗi thường gặp
-
-| Hiện tượng | Cách xử lý |
+| Thành viên | Phụ trách |
 |---|---|
-| Conflict khi merge | Mở file, tìm `<<<<<<<` `=======` `>>>>>>>`, giữ phần đúng của cả hai bên, xóa các dấu đó, `git add` rồi `git commit`. Không chắc thì hỏi người sửa phần kia. |
-| `git push` bị từ chối (rejected) | Lấy code mới về (`git pull --rebase origin <nhánh của mình>`) rồi push lại. |
-| Gradle sync lỗi sau khi pull | Bấm **Sync Now**; nếu vẫn lỗi: Build → Clean Project, rồi File → Invalidate Caches → Restart. |
-| Android Studio báo "Gradle files have changed" | Bấm **Sync Now**, chờ xong rồi mới Run. |
-| Build lỗi do khác phiên bản | Dùng đúng phiên bản ở mục 1 (JDK 17, AGP 8.7.2, Kotlin 2.0.21). Không tự nâng phiên bản. |
-| Git báo cả file bị đổi dù không sửa | Do khác kiểu xuống dòng trên Windows. Chạy `git config core.autocrlf true` rồi thử lại. |
-| Lỡ commit nhầm file không nên đưa lên | Báo TV1 ngay, đừng tự xóa lịch sử. Nếu là mật khẩu hoặc khóa, phải đổi khóa đó. |
+| Thành | Nền tảng chung, tài khoản, quản trị, tích hợp |
+| Trinh | Đặt phòng |
+| Phong | Phê duyệt |
+| Bảo | Check-in và sự cố |
 
 ---
 
-## 12. Những thứ KHÔNG được đưa lên GitHub
+## 📚 Tài liệu cho nhóm phát triển
 
-- `local.properties`, thư mục `.idea/`, thư mục `build/`, `.gradle/`.
-- File khóa ký app (`*.jks`, `*.keystore`).
-- `google-services.json` thật (FCM): TV1 gửi riêng cho từng thành viên qua kênh nhóm, mỗi người tự đặt vào `app/`.
-- Mật khẩu, khóa API, token, địa chỉ server nội bộ.
+- Hợp đồng API: [`docs/api-account.md`](docs/api-account.md), [`api-booking.md`](docs/api-booking.md), [`api-approval.md`](docs/api-approval.md), [`api-checkin.md`](docs/api-checkin.md)
+- Quy tắc làm việc nhóm, đặt tên nhánh, quy trình Pull Request: xem [`HUONG_DAN.md`](HUONG_DAN.md)
 
 ---
 
-## 13. Checklist trước khi push
+<div align="center">
 
-- [ ] Đã `git pull` và `git merge develop` vào nhánh của mình, không còn conflict.
-- [ ] `./gradlew assembleDebug` thành công.
-- [ ] `./gradlew test` thành công.
-- [ ] Đã chạy thử app trên emulator hoặc máy thật (Mock Data bật), chức năng của mình hoạt động.
-- [ ] `git status` chỉ có file trong module của mình, không có file lạ (`.idea`, `local.properties`, `build/`).
-- [ ] Không sửa file chung ở mục 7 khi chưa báo TV1.
-- [ ] Commit theo quy ước ở mục 5, một chức năng mỗi PR.
+Đồ án thực hiện tại **Trường Đại học Kiến trúc Đà Nẵng** · 2026
+
+</div>
